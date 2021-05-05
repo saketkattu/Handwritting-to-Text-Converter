@@ -33,6 +33,9 @@ def _setup_parser():
     parser = argparse.ArgumentParser(add_help=False, parents=[trainer_parser])
 
     # Basic arguments
+    # Hide lines below until Lab 5
+    parser.add_argument("--wandb", action="store_true", default=False)
+    # Hide lines above until Lab 5
     parser.add_argument("--data_class", type=str, default="MNIST")
     parser.add_argument("--model_class", type=str, default="MLP")
     parser.add_argument("--load_checkpoint", type=str, default=None)
@@ -73,6 +76,14 @@ def main():
 
     if args.loss not in ("ctc", "transformer"):
         lit_model_class = lit_models.BaseLitModel
+    # Hide lines below until Lab 3
+    if args.loss == "ctc":
+        lit_model_class = lit_models.CTCLitModel
+    # Hide lines above until Lab 3
+    # Hide lines below until Lab 4
+    if args.loss == "transformer":
+        lit_model_class = lit_models.TransformerLitModel
+    # Hide lines above until Lab 4
 
     if args.load_checkpoint is not None:
         lit_model = lit_model_class.load_from_checkpoint(args.load_checkpoint, args=args, model=model)
@@ -80,6 +91,12 @@ def main():
         lit_model = lit_model_class(args=args, model=model)
 
     logger = pl.loggers.TensorBoardLogger("training/logs")
+    # Hide lines below until Lab 5
+    if args.wandb:
+        logger = pl.loggers.WandbLogger()
+        logger.watch(model)
+        logger.log_hyperparams(vars(args))
+    # Hide lines above until Lab 5
 
     early_stopping_callback = pl.callbacks.EarlyStopping(monitor="val_loss", mode="min", patience=10)
     model_checkpoint_callback = pl.callbacks.ModelCheckpoint(
@@ -97,6 +114,14 @@ def main():
     trainer.test(lit_model, datamodule=data)
     # pylint: enable=no-member
 
+    # Hide lines below until Lab 5
+    best_model_path = model_checkpoint_callback.best_model_path
+    if best_model_path:
+        print("Best model saved at:", best_model_path)
+        if args.wandb:
+            wandb.save(best_model_path)
+            print("Best model also uploaded to W&B")
+    # Hide lines above until Lab 5
 
 
 if __name__ == "__main__":
